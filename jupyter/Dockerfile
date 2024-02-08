@@ -4,7 +4,7 @@ FROM tensorflow/tensorflow:2.12.0-gpu-jupyter
 RUN rm /etc/apt/sources.list.d/cuda.list
 RUN rm /etc/apt/sources.list.d/custom.list
 
-RUN sed -i -e "s|http://archive.ubuntu.com|http://jp.archive.ubuntu.com|g" /etc/apt/sources.list \
+RUN sed -i -e "s|http://archive.ubuntu.com|http://us.archive.ubuntu.com|g" /etc/apt/sources.list \
  && apt-get -y update  \
  && DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends \
       sudo \
@@ -14,7 +14,7 @@ RUN sed -i -e "s|http://archive.ubuntu.com|http://jp.archive.ubuntu.com|g" /etc/
       libc6-dev \
  && rm -rf /var/lib/apt/lists/*
 
-ARG USERNAME=jovyan
+ARG USERNAME=bcoskun
 ARG GROUPNAME=users
 ARG UID=1000
 ARG GID=100

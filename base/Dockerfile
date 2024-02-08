@@ -2,53 +2,61 @@ FROM jupyter/minimal-notebook:python-3.8
 USER root
 
 RUN apt-get -y purge --auto-remove python3.10
-RUN sed -i -e "s|http://archive.ubuntu.com|http://jp.archive.ubuntu.com|g" /etc/apt/sources.list \
- && apt-get -y update  \
- && DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends \
+RUN sed -i -e "s|http://archive.ubuntu.com|http://us.archive.ubuntu.com|g" /etc/apt/sources.list 
+RUN apt-get -y update  
+RUN DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends \
       sudo \
       openjdk-8-jdk \
       curl \
       gnupg \
       procps \
       coreutils \
-      libc6-dev \
- && rm -rf /var/lib/apt/lists/*
+      libc6-dev 
+RUN rm -rf /var/lib/apt/lists/*
 
-ARG USERNAME=jovyan
+#ARG USERNAME=jovyan
+ARG USERNAME=bcoskun    
 ARG GROUPNAME=users
 ARG UID=1000
 ARG GID=100
+
+RUN sudo useradd -m -g $GROUPNAME $USERNAME
+
+RUN sudo ls /home
 
 RUN echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
  && chmod 0440 /etc/sudoers.d/$USERNAME
 
 USER $USERNAME
+RUN whoami
 
 ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/
 
 # Hadoop
-ARG HADOOP_VERSION=3.3.4
+ARG HADOOP_VERSION=3.3.6
 ARG HADOOP_URL=https://www.apache.org/dist/hadoop/common/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz
 ENV HADOOP_HOME=/opt/hadoop
 
-RUN set -x \
- && curl -kfsSL https://archive.apache.org/dist/hadoop/common/KEYS -o /tmp/hadoop-KEYS \
- && gpg --import /tmp/hadoop-KEYS \
- && sudo mkdir $HADOOP_HOME  \
- && sudo chown $USERNAME:$GROUPNAME -R $HADOOP_HOME \
- && curl -kfsSL $HADOOP_URL -o /tmp/hadoop.tar.gz \
- && curl -kfsSL $HADOOP_URL.asc -o /tmp/hadoop.tar.gz.asc \
- && gpg --verify /tmp/hadoop.tar.gz.asc \
- && tar -xf /tmp/hadoop.tar.gz -C $HADOOP_HOME --strip-components 1 \
- && mkdir $HADOOP_HOME/logs \
- && rm /tmp/hadoop*
+# Still looking jovyan and if the user changed it doesn't work properly, but why?
+RUN set -x 
+RUN curl -kfsSL https://archive.apache.org/dist/hadoop/common/KEYS -o /tmp/hadoop-KEYS 
+RUN gpg --import /tmp/hadoop-KEYS 
+
+RUN sudo mkdir $HADOOP_HOME  
+RUN sudo chown $USERNAME:$GROUPNAME -R $HADOOP_HOME 
+RUN  curl -kfsSL $HADOOP_URL -o /tmp/hadoop.tar.gz 
+RUN  curl -kfsSL $HADOOP_URL.asc -o /tmp/hadoop.tar.gz.asc 
+RUN gpg --verify /tmp/hadoop.tar.gz.asc 
+RUN tar -xf /tmp/hadoop.tar.gz -C $HADOOP_HOME --strip-components 1 
+RUN mkdir $HADOOP_HOME/logs 
+RUN rm /tmp/hadoop*
 
 ENV HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop
 ENV PATH=$HADOOP_HOME/sbin:$HADOOP_HOME/bin:$PATH
 ENV LD_LIBRARY_PATH=$HADOOP_HOME/lib/native:$LD_LIBRARY_PATH
 
 # Spark
-ARG SPARK_VERSION=3.3.1
+ARG SPARK_VERSION=3.3.4
 ARG SPARK_URL=https://archive.apache.org/dist/spark/spark-$SPARK_VERSION/spark-$SPARK_VERSION-bin-hadoop3.tgz
 ENV SPARK_HOME=/opt/spark
 
