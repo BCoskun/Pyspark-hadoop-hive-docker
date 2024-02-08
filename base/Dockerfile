@@ -115,5 +115,6 @@ RUN ln $HADOOP_CONF_DIR/workers $SPARK_CONF_DIR/ \
 
 # Entry point
 COPY entrypoint.sh /usr/local/sbin/entrypoint.sh
+RUN sudo ls /usr/local/sbin/
 RUN sudo chmod a+x /usr/local/sbin/entrypoint.sh
 ENTRYPOINT ["entrypoint.sh"]
